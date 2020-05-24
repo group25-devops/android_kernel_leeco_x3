@@ -1669,13 +1669,6 @@
 					mnt_flags = "ro";
 					fsmgr_flags = "wait";
 				};
-                                cache {
-                                        compatible = "android,cache";
-                                        dev = "/dev/block/platform/mtk-msdc.0/11230000.MSDC0/by-name/cache";
-                                        type = "ext4";
-                                        mnt_flags = "noatime,nosuid,nodev,noauto_da_alloc";
-                                        fsmgr_flags = "wait,check,formattable";
-                                };
 			};
 		};
 	};
