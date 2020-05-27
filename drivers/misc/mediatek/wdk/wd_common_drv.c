@@ -210,8 +210,8 @@ void wk_start_kick_cpu(int cpu)
 	if (IS_ERR(wk_tsk[cpu])) {
 		pr_debug("[wdk]wk_task[%d] is NULL\n", cpu);
 	} else {
-		/* kthread_bind(wk_tsk[cpu], cpu); */
-		WARN_ON_ONCE(set_cpus_allowed_ptr(wk_tsk[cpu], cpumask_of(cpu)) < 0);
+		kthread_bind(wk_tsk[cpu], cpu);
+//		WARN_ON_ONCE(set_cpus_allowed_ptr(wk_tsk[cpu], cpumask_of(cpu)) < 0);
 		pr_debug("[wdk]bind thread[%d] to cpu[%d]\n", wk_tsk[cpu]->pid, cpu);
 		wake_up_process(wk_tsk[cpu]);
 	}
