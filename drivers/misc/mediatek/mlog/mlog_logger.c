@@ -109,8 +109,8 @@ static int mlog_buf_len = MLOG_BUF_LEN;
 static unsigned mlog_start;
 static unsigned mlog_end;
 
-static int min_adj = -16;
-static int max_adj = 16;
+static int min_adj = -1000;
+static int max_adj = 1000;
 static int limit_pid = -1;
 
 static struct timer_list mlog_timer;
@@ -128,7 +128,7 @@ static char time_nanosec_str[] = ".%06lu]";
 static char mem_size_str[] = " %6lu";
 static char acc_count_str[] = " %7lu";
 static char pid_str[] = " [%lu]";
-static char adj_str[] = " %3ld";
+static char adj_str[] = " %5ld";
 
 /*
 buddyinfo
@@ -304,7 +304,7 @@ int mlog_print_fmt(struct seq_file *m)
 	if (proc_filter) {
 		seq_puts(m, " [pid]");
 		if (proc_filter & P_ADJ)
-			seq_puts(m, " adj");
+			seq_puts(m, " score_adj");
 		if (proc_filter & P_RSS)
 			seq_puts(m, "    rss");
 		if (proc_filter & P_RSWAP)
@@ -498,17 +498,6 @@ struct task_struct *find_trylock_task_mm(struct task_struct *t)
 	return NULL;
 }
 
-/*
- * it's copied from lowmemorykiller.c
-*/
-static short lowmem_oom_score_adj_to_oom_adj(short oom_score_adj)
-{
-	if (oom_score_adj == OOM_SCORE_ADJ_MAX)
-		return OOM_ADJUST_MAX;
-	else
-		return ((oom_score_adj * -OOM_DISABLE * 10) / OOM_SCORE_ADJ_MAX + 5) / 10;	/* round */
-}
-
 static void mlog_procinfo(void)
 {
 	struct task_struct *tsk;
@@ -535,11 +524,7 @@ static void mlog_procinfo(void)
 		if (!p->signal)
 			goto unlock_continue;
 
-#ifdef CONFIG_ANDROID_LOW_MEMORY_KILLER_AUTODETECT_OOM_ADJ_VALUES
-		oom_score_adj = lowmem_oom_score_adj_to_oom_adj(p->signal->oom_score_adj);
-#else
-		oom_score_adj = p->signal->oom_adj;
-#endif
+		oom_score_adj = p->signal->oom_score_adj;
 
 		if (max_adj < oom_score_adj || oom_score_adj < min_adj)
 			goto unlock_continue;
