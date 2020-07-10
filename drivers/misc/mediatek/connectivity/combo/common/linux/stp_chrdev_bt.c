@@ -64,10 +64,10 @@ static UINT32 gDbgLevel = BT_LOG_INFO;
 #define VERSION "2.0"
 
 #define COMBO_IOC_MAGIC             0xb0
-#define COMBO_IOCTL_FW_ASSERT       _IOW(COMBO_IOC_MAGIC, 0, int)
-#define COMBO_IOCTL_BT_SET_PSM      _IOW(COMBO_IOC_MAGIC, 1, bool)
-#define COMBO_IOCTL_BT_IC_HW_VER    _IOR(COMBO_IOC_MAGIC, 2, void*)
-#define COMBO_IOCTL_BT_IC_FW_VER    _IOR(COMBO_IOC_MAGIC, 3, void*)
+#define COMBO_IOCTL_FW_ASSERT       _IOWR(COMBO_IOC_MAGIC, 0, int)
+#define COMBO_IOCTL_BT_SET_PSM      _IOWR(COMBO_IOC_MAGIC, 1, bool)
+#define COMBO_IOCTL_BT_IC_HW_VER    _IOWR(COMBO_IOC_MAGIC, 2, void*)
+#define COMBO_IOCTL_BT_IC_FW_VER    _IOWR(COMBO_IOC_MAGIC, 3, void*)
 
 #define BT_BUFFER_SIZE              2048
 #define FTRACE_STR_LOG_SIZE         256
@@ -85,7 +85,7 @@ static INT32 BT_devs = 1;
 static INT32 BT_major = BT_DEV_MAJOR;
 module_param(BT_major, uint, 0);
 static struct cdev BT_cdev;
-#if CREATE_NODE_DYNAMIC
+#if REMOVE_MK_NODE
 static struct class *stpbt_class;
 static struct device *stpbt_dev;
 #endif
@@ -631,7 +631,7 @@ static int BT_init(void)
 	if (cdv_err)
 		goto error;
 
-#if CREATE_NODE_DYNAMIC /* mknod replace */
+#if REMOVE_MK_NODE /* mknod replace */
 	stpbt_class = class_create(THIS_MODULE, "stpbt");
 	if (IS_ERR(stpbt_class))
 		goto error;
@@ -645,7 +645,7 @@ static int BT_init(void)
 	return 0;
 
 error:
-#if CREATE_NODE_DYNAMIC
+#if REMOVE_MK_NODE
 	if (stpbt_dev && !IS_ERR(stpbt_dev)) {
 		device_destroy(stpbt_class, dev);
 		stpbt_dev = NULL;
@@ -672,7 +672,7 @@ static void BT_exit(void)
 	/* Destroy wake lock*/
 	wakeup_source_unregister(bt_wakelock);
 
-#if CREATE_NODE_DYNAMIC
+#if REMOVE_MK_NODE
 	if (stpbt_dev && !IS_ERR(stpbt_dev)) {
 		device_destroy(stpbt_class, dev);
 		stpbt_dev = NULL;
