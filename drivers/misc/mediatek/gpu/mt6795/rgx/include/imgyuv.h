@@ -1,9 +1,7 @@
 /*************************************************************************/ /*!
 @File
-@Title          Device Memory History shared definitions
+@Title          YUV defines
 @Copyright      Copyright (c) Imagination Technologies Ltd. All Rights Reserved
-@Description    Shared (client/server) definitions related to the Devicemem History
-                functionality.
 @License        Dual MIT/GPLv2
 
 The contents of this file are subject to the MIT license as set out below.
@@ -42,16 +40,24 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */ /**************************************************************************/
 
-#ifndef DEVICEMEM_HISTORY_SHARED_H
-#define DEVICEMEM_HISTORY_SHARED_H
+#if !defined(_IMGYUV_H_)
+#define _IMGYUV_H_
 
-/* structure used inside MEMDESC to hold the allocation name until
- * the allocation is unmapped
- */
-typedef struct _DEVICEMEM_HISTORY_MEMDESC_DATA_
+typedef enum
 {
-	IMG_CHAR szText[DEVICEMEM_HISTORY_TEXT_BUFSZ];
-	IMG_DEVMEM_SIZE_T uiSize;
-} DEVICEMEM_HISTORY_MEMDESC_DATA;
+	IMG_COLORSPACE_BT601_CONFORMANT_RANGE = 1,
+	IMG_COLORSPACE_BT601_FULL_RANGE = 2,
+	IMG_COLORSPACE_BT709_CONFORMANT_RANGE = 3,
+	IMG_COLORSPACE_BT709_FULL_RANGE = 4
+}IMG_YUV_COLORSPACE;
 
-#endif
+typedef enum
+{
+	IMG_CHROMA_INTERP_ZERO = 1,
+	IMG_CHROMA_INTERP_QUARTER = 2,
+	IMG_CHROMA_INTERP_HALF = 3,
+	IMG_CHROMA_INTERP_THREEQUARTERS = 4
+}IMG_YUV_CHROMA_INTERP;
+
+
+#endif /* _IMGYUV_H_ */

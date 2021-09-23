@@ -1,9 +1,9 @@
 /*************************************************************************/ /*!
 @File
-@Title          Common bridge header for devicememhistory
+@Title          Common bridge header for syncexport
 @Copyright      Copyright (c) Imagination Technologies Ltd. All Rights Reserved
 @Description    Declares common defines and structures that are used by both
-                the client and sever side of the bridge for devicememhistory
+                the client and sever side of the bridge for syncexport
 @License        Dual MIT/GPLv2
 
 The contents of this file are subject to the MIT license as set out below.
@@ -42,58 +42,72 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */ /**************************************************************************/
 
-#ifndef COMMON_DEVICEMEMHISTORY_BRIDGE_H
-#define COMMON_DEVICEMEMHISTORY_BRIDGE_H
-
-#include "img_types.h"
-#include "pvrsrv_error.h"
-
-#include "img_types.h"
-#include "mm_common.h"
+#ifndef COMMON_SYNCEXPORT_BRIDGE_H
+#define COMMON_SYNCEXPORT_BRIDGE_H
 
 
-#define PVRSRV_BRIDGE_DEVICEMEMHISTORY_CMD_FIRST			0
-#define PVRSRV_BRIDGE_DEVICEMEMHISTORY_DEVICEMEMHISTORYMAP			PVRSRV_BRIDGE_DEVICEMEMHISTORY_CMD_FIRST+0
-#define PVRSRV_BRIDGE_DEVICEMEMHISTORY_DEVICEMEMHISTORYUNMAP			PVRSRV_BRIDGE_DEVICEMEMHISTORY_CMD_FIRST+1
-#define PVRSRV_BRIDGE_DEVICEMEMHISTORY_CMD_LAST			(PVRSRV_BRIDGE_DEVICEMEMHISTORY_CMD_FIRST+1)
+
+#include "pvr_bridge_io.h"
+
+#define PVRSRV_BRIDGE_SYNCEXPORT_CMD_FIRST			(PVRSRV_BRIDGE_SYNCEXPORT_START)
+#define PVRSRV_BRIDGE_SYNCEXPORT_SYNCPRIMSERVEREXPORT			PVRSRV_IOWR(PVRSRV_BRIDGE_SYNCEXPORT_CMD_FIRST+0)
+#define PVRSRV_BRIDGE_SYNCEXPORT_SYNCPRIMSERVERUNEXPORT			PVRSRV_IOWR(PVRSRV_BRIDGE_SYNCEXPORT_CMD_FIRST+1)
+#define PVRSRV_BRIDGE_SYNCEXPORT_SYNCPRIMSERVERIMPORT			PVRSRV_IOWR(PVRSRV_BRIDGE_SYNCEXPORT_CMD_FIRST+2)
+#define PVRSRV_BRIDGE_SYNCEXPORT_CMD_LAST			(PVRSRV_BRIDGE_SYNCEXPORT_CMD_FIRST+2)
 
 
 /*******************************************
-            DevicememHistoryMap          
+            SyncPrimServerExport          
  *******************************************/
 
-/* Bridge in structure for DevicememHistoryMap */
-typedef struct PVRSRV_BRIDGE_IN_DEVICEMEMHISTORYMAP_TAG
+/* Bridge in structure for SyncPrimServerExport */
+typedef struct PVRSRV_BRIDGE_IN_SYNCPRIMSERVEREXPORT_TAG
 {
-	IMG_DEV_VIRTADDR sDevVAddr;
-	IMG_DEVMEM_SIZE_T uiSize;
-	const IMG_CHAR * puiText;
-} __attribute__((packed)) PVRSRV_BRIDGE_IN_DEVICEMEMHISTORYMAP;
+	IMG_HANDLE hSyncHandle;
+} __attribute__((packed)) PVRSRV_BRIDGE_IN_SYNCPRIMSERVEREXPORT;
 
 
-/* Bridge out structure for DevicememHistoryMap */
-typedef struct PVRSRV_BRIDGE_OUT_DEVICEMEMHISTORYMAP_TAG
+/* Bridge out structure for SyncPrimServerExport */
+typedef struct PVRSRV_BRIDGE_OUT_SYNCPRIMSERVEREXPORT_TAG
 {
+	IMG_HANDLE hExport;
 	PVRSRV_ERROR eError;
-} __attribute__((packed)) PVRSRV_BRIDGE_OUT_DEVICEMEMHISTORYMAP;
+} __attribute__((packed)) PVRSRV_BRIDGE_OUT_SYNCPRIMSERVEREXPORT;
 
 /*******************************************
-            DevicememHistoryUnmap          
+            SyncPrimServerUnexport          
  *******************************************/
 
-/* Bridge in structure for DevicememHistoryUnmap */
-typedef struct PVRSRV_BRIDGE_IN_DEVICEMEMHISTORYUNMAP_TAG
+/* Bridge in structure for SyncPrimServerUnexport */
+typedef struct PVRSRV_BRIDGE_IN_SYNCPRIMSERVERUNEXPORT_TAG
 {
-	IMG_DEV_VIRTADDR sDevVAddr;
-	IMG_DEVMEM_SIZE_T uiSize;
-	const IMG_CHAR * puiText;
-} __attribute__((packed)) PVRSRV_BRIDGE_IN_DEVICEMEMHISTORYUNMAP;
+	IMG_HANDLE hExport;
+} __attribute__((packed)) PVRSRV_BRIDGE_IN_SYNCPRIMSERVERUNEXPORT;
 
 
-/* Bridge out structure for DevicememHistoryUnmap */
-typedef struct PVRSRV_BRIDGE_OUT_DEVICEMEMHISTORYUNMAP_TAG
+/* Bridge out structure for SyncPrimServerUnexport */
+typedef struct PVRSRV_BRIDGE_OUT_SYNCPRIMSERVERUNEXPORT_TAG
 {
 	PVRSRV_ERROR eError;
-} __attribute__((packed)) PVRSRV_BRIDGE_OUT_DEVICEMEMHISTORYUNMAP;
+} __attribute__((packed)) PVRSRV_BRIDGE_OUT_SYNCPRIMSERVERUNEXPORT;
 
-#endif /* COMMON_DEVICEMEMHISTORY_BRIDGE_H */
+/*******************************************
+            SyncPrimServerImport          
+ *******************************************/
+
+/* Bridge in structure for SyncPrimServerImport */
+typedef struct PVRSRV_BRIDGE_IN_SYNCPRIMSERVERIMPORT_TAG
+{
+	IMG_HANDLE hImport;
+} __attribute__((packed)) PVRSRV_BRIDGE_IN_SYNCPRIMSERVERIMPORT;
+
+
+/* Bridge out structure for SyncPrimServerImport */
+typedef struct PVRSRV_BRIDGE_OUT_SYNCPRIMSERVERIMPORT_TAG
+{
+	IMG_HANDLE hSyncHandle;
+	IMG_UINT32 ui32SyncPrimVAddr;
+	PVRSRV_ERROR eError;
+} __attribute__((packed)) PVRSRV_BRIDGE_OUT_SYNCPRIMSERVERIMPORT;
+
+#endif /* COMMON_SYNCEXPORT_BRIDGE_H */
