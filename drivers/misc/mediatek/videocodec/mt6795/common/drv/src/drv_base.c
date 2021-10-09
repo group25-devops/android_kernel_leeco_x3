@@ -4,6 +4,18 @@
 #include "val_log.h"
 #include "drv_api.h"
 
+/* #define VCODEC_DEBUG */
+#ifdef VCODEC_DEBUG
+#undef VCODEC_DEBUG
+#define VCODEC_DEBUG MODULE_MFV_LOGE
+#undef MODULE_MFV_LOGD
+#define MODULE_MFV_LOGD  MODULE_MFV_LOGE
+#else
+#define VCODEC_DEBUG(...)
+#undef MODULE_MFV_LOGD
+#define MODULE_MFV_LOGD(...)
+#endif
+
 /* ============================================================== */
 /* For Hybrid HW */
 /* spinlock : OalHWContextLock */
@@ -30,8 +42,9 @@ VAL_INT32_T search_HWLockSlot_ByTID(VAL_ULONG_T ulpa, VAL_UINT32_T curr_tid)
 		if (oal_hw_context[i].u4VCodecThreadNum != VCODEC_THREAD_MAX_NUM) {
 			for (j = 0; j < oal_hw_context[i].u4VCodecThreadNum; j++) {
 				if (oal_hw_context[i].u4VCodecThreadID[j] == curr_tid) {
-					MFV_LOGD("[VCODEC][search_HWLockSlot_ByTID]\n");
-					MFV_LOGD("Lookup curr HW Locker is ObjId %d in index%d\n", curr_tid, i);
+					MODULE_MFV_LOGD("[VCODEC][search_HWLockSlot_ByTID]\n");
+					MODULE_MFV_LOGD("Lookup curr HW Locker is ObjId %d in index%d\n",
+						 curr_tid, i);
 					return i;
 				}
 			}
@@ -52,6 +65,13 @@ VAL_INT32_T search_HWLockSlot_ByHandle(VAL_ULONG_T ulpa, VAL_HANDLE_T handle)
 		}
 	}
 
+	/* dump debug info */
+	MODULE_MFV_LOGE("search_HWLockSlot_ByHandle");
+	for (i = 0; i < VCODEC_MULTIPLE_INSTANCE_NUM / 2; i++) {
+		/* Add one line comment for avoid kernel coding style, WARNING:BRACES: */
+		MODULE_MFV_LOGE("[%d] 0x%lx", i, oal_hw_context[i].pvHandle);
+	}
+
 	return -1;
 }
 
@@ -63,13 +83,13 @@ VAL_VCODEC_OAL_HW_CONTEXT_T *setCurr_HWLockSlot(VAL_ULONG_T ulpa, VAL_UINT32_T t
 	/* Dump current ObjId */
 	for (i = 0; i < VCODEC_MULTIPLE_INSTANCE_NUM; i++) {
 		/* Add one line comment for avoid kernel coding style, WARNING:BRACES: */
-		MFV_LOGD("Dump curr slot %d ObjId %lu\n", i, oal_hw_context[i].ObjId);
+		MODULE_MFV_LOGD("[VCODEC] Dump curr slot %d ObjId 0x%lx\n", i, oal_hw_context[i].ObjId);
 	}
 
 	/* check if current ObjId exist in oal_hw_context[i].ObjId */
 	for (i = 0; i < VCODEC_MULTIPLE_INSTANCE_NUM; i++) {
 		if (oal_hw_context[i].ObjId == ulpa) {
-			MFV_LOGD("Curr Already exist in %d Slot\n", i);
+			MODULE_MFV_LOGD("[VCODEC] Curr Already exist in %d Slot\n", i);
 			return &oal_hw_context[i];
 		}
 	}
@@ -80,14 +100,15 @@ VAL_VCODEC_OAL_HW_CONTEXT_T *setCurr_HWLockSlot(VAL_ULONG_T ulpa, VAL_UINT32_T t
 			for (j = 0; j < oal_hw_context[i].u4VCodecThreadNum; j++) {
 				if (oal_hw_context[i].u4VCodecThreadID[j] == current->pid) {
 					oal_hw_context[i].ObjId = ulpa;
-					MFV_LOGD("[setCurr_HWLockSlot] setCurr %d Slot\n", i);
+					MODULE_MFV_LOGD("[VCODEC][setCurr_HWLockSlot] setCurr %d Slot\n",
+						 i);
 					return &oal_hw_context[i];
 				}
 			}
 		}
 	}
 
-	MFV_LOGE("[VCodec Error][ERROR] setCurr_HWLockSlot All %d Slots unavaliable\n",
+	MODULE_MFV_LOGE("[VCODEC][ERROR] setCurr_HWLockSlot All %d Slots unavaliable\n",
 		 VCODEC_MULTIPLE_INSTANCE_NUM);
 	oal_hw_context[0].u4VCodecThreadNum = VCODEC_THREAD_MAX_NUM - 1;
 	for (i = 0; i < oal_hw_context[0].u4VCodecThreadNum; i++) {
@@ -109,17 +130,17 @@ VAL_VCODEC_OAL_HW_CONTEXT_T *setCurr_HWLockSlot_Thread_ID(VAL_VCODEC_THREAD_ID_T
 	for (i = 0; i < VCODEC_MULTIPLE_INSTANCE_NUM; i++) {
 		if (oal_hw_context[i].u4VCodecThreadNum != VCODEC_THREAD_MAX_NUM) {
 			for (j = 0; j < oal_hw_context[i].u4VCodecThreadNum; j++) {
-				MFV_LOGD("[VCODEC][setCurr_HWLockSlot_Thread_ID]\n");
-				MFV_LOGD("Dump curr slot %d, ThreadID[%d] = %d\n",
-				     i, j, oal_hw_context[i].u4VCodecThreadID[j]);
+				MODULE_MFV_LOGD("[VCODEC][setCurr_HWLockSlot_Thread_ID]\n");
+				MODULE_MFV_LOGD("Dump curr slot %d, ThreadID[%d] = %d\n",
+					 i, j, oal_hw_context[i].u4VCodecThreadID[j]);
 			}
 		}
 	}
 
 	for (i = 0; i < a_prVcodecThreadID.u4VCodecThreadNum; i++) {
-		MFV_LOGD("[setCurr_HWLockSlot_Thread_ID] VCodecThreadNum = %d, VCodecThreadID = %d\n",
-		     a_prVcodecThreadID.u4VCodecThreadNum,
-		     a_prVcodecThreadID.u4VCodecThreadID[i]
+		MODULE_MFV_LOGD
+		    ("[VCODEC][setCurr_HWLockSlot_Thread_ID] VCodecThreadNum = %d, VCodecThreadID = %d\n",
+		     a_prVcodecThreadID.u4VCodecThreadNum, a_prVcodecThreadID.u4VCodecThreadID[i]
 		    );
 	}
 
@@ -130,8 +151,9 @@ VAL_VCODEC_OAL_HW_CONTEXT_T *setCurr_HWLockSlot_Thread_ID(VAL_VCODEC_THREAD_ID_T
 				for (k = 0; k < a_prVcodecThreadID.u4VCodecThreadNum; k++) {
 					if (oal_hw_context[i].u4VCodecThreadID[j] ==
 					    a_prVcodecThreadID.u4VCodecThreadID[k]) {
-						MFV_LOGE("[VCODEC][setCurr_HWLockSlot_Thread_ID]\n");
-						MFV_LOGE("Curr Already exist in %d Slot\n", i);
+						MODULE_MFV_LOGE
+						    ("[VCODEC][setCurr_HWLockSlot_Thread_ID]\n");
+						MODULE_MFV_LOGE("Curr Already exist in %d Slot\n", i);
 						*a_prIndex = i;
 						return &oal_hw_context[i];
 					}
@@ -145,9 +167,11 @@ VAL_VCODEC_OAL_HW_CONTEXT_T *setCurr_HWLockSlot_Thread_ID(VAL_VCODEC_THREAD_ID_T
 		if (oal_hw_context[i].u4VCodecThreadNum == VCODEC_THREAD_MAX_NUM) {
 			oal_hw_context[i].u4VCodecThreadNum = a_prVcodecThreadID.u4VCodecThreadNum;
 			for (j = 0; j < a_prVcodecThreadID.u4VCodecThreadNum; j++) {
-				oal_hw_context[i].u4VCodecThreadID[j] = a_prVcodecThreadID.u4VCodecThreadID[j];
-				MFV_LOGD("[setCurr_HWLockSlot_Thread_ID] setCurr %d Slot, %d\n",
-					i, oal_hw_context[i].u4VCodecThreadID[j]);
+				oal_hw_context[i].u4VCodecThreadID[j] =
+				    a_prVcodecThreadID.u4VCodecThreadID[j];
+				MODULE_MFV_LOGD
+				    ("[VCODEC][setCurr_HWLockSlot_Thread_ID] setCurr %d Slot, %d\n",
+				     i, oal_hw_context[i].u4VCodecThreadID[j]);
 			}
 			*a_prIndex = i;
 			return &oal_hw_context[i];
@@ -155,12 +179,13 @@ VAL_VCODEC_OAL_HW_CONTEXT_T *setCurr_HWLockSlot_Thread_ID(VAL_VCODEC_THREAD_ID_T
 	}
 
 	{
-		MFV_LOGE("[VCodec Error][ERROR] setCurr_HWLockSlot_Thread_ID All %d Slots unavaliable\n",
-		     VCODEC_MULTIPLE_INSTANCE_NUM);
+		MODULE_MFV_LOGE("[VCODEC][ERROR] setCurr_HWLockSlot_Thread_ID All %d Slots unavaliable\n",
+			 VCODEC_MULTIPLE_INSTANCE_NUM);
 		oal_hw_context[0].u4VCodecThreadNum = a_prVcodecThreadID.u4VCodecThreadNum;
 		for (i = 0; i < oal_hw_context[0].u4VCodecThreadNum; i++) {
 			/* Add one line comment for avoid kernel coding style, WARNING:BRACES: */
-			oal_hw_context[0].u4VCodecThreadID[i] = a_prVcodecThreadID.u4VCodecThreadID[i];
+			oal_hw_context[0].u4VCodecThreadID[i] =
+			    a_prVcodecThreadID.u4VCodecThreadID[i];
 		}
 		*a_prIndex = 0;
 		return &oal_hw_context[0];
@@ -177,44 +202,47 @@ VAL_VCODEC_OAL_HW_CONTEXT_T *freeCurr_HWLockSlot(VAL_ULONG_T ulpa)
 
 	for (i = 0; i < VCODEC_MULTIPLE_INSTANCE_NUM; i++) {
 		if (oal_hw_context[i].ObjId == ulpa) {
-			oal_hw_context[i].ObjId = -1;
+			oal_hw_context[i].ObjId = -1L;
 			for (j = 0; j < oal_hw_context[i].u4VCodecThreadNum; j++) {
 				/* Add one line comment for avoid kernel coding style, WARNING:BRACES: */
 				oal_hw_context[i].u4VCodecThreadID[j] = -1;
 			}
 			oal_hw_context[i].u4VCodecThreadNum = VCODEC_THREAD_MAX_NUM;
 			oal_hw_context[i].Oal_HW_reg = (VAL_VCODEC_OAL_HW_REGISTER_T *) 0;
-			MFV_LOGD("freeCurr_HWLockSlot %d Slot\n", i);
+			MODULE_MFV_LOGD("[VCODEC] freeCurr_HWLockSlot %d Slot\n", i);
 			return &oal_hw_context[i];
 		}
 	}
 
-	MFV_LOGE("[VCodec Error][ERROR] freeCurr_HWLockSlot can't find pid in HWLockSlot\n");
+	MODULE_MFV_LOGE("[VCODEC][ERROR] freeCurr_HWLockSlot can't find pid in HWLockSlot\n");
 	return 0;
 }
 
 
-void Add_NonCacheMemoryList(VAL_ULONG_T a_ulKVA, VAL_ULONG_T a_ulKPA,
-								VAL_ULONG_T a_ulSize, VAL_UINT32_T a_u4VCodecThreadNum,
-								VAL_UINT32_T *a_pu4VCodecThreadID)
+void Add_NonCacheMemoryList(VAL_ULONG_T a_ulKVA,
+			    VAL_ULONG_T a_ulKPA,
+			    VAL_ULONG_T a_ulSize,
+			    VAL_UINT32_T a_u4VCodecThreadNum, VAL_UINT32_T *a_pu4VCodecThreadID)
 {
 	VAL_UINT32_T u4I = 0;
 	VAL_UINT32_T u4J = 0;
 
-	MFV_LOGD("Add_NonCacheMemoryList +, KVA = 0x%lx, KPA = 0x%lx, Size = 0x%lx\n", a_ulKVA,
-		 a_ulKPA, a_ulSize);
+	MODULE_MFV_LOGD("[VCODEC] Add_NonCacheMemoryList +, KVA = 0x%lx, KPA = 0x%lx, Size = 0x%lx\n",
+		 a_ulKVA, a_ulKPA, a_ulSize);
 
 	for (u4I = 0; u4I < VCODEC_MULTIPLE_INSTANCE_NUM_x_10; u4I++) {
-		if ((grNonCacheMemoryList[u4I].ulKVA == 0xffffffff)
-		    && (grNonCacheMemoryList[u4I].ulKPA == 0xffffffff)) {
-			MFV_LOGD("ADD Add_NonCacheMemoryList index = %d, VCodecThreadNum = %d, curr_tid = %d\n",
+		if ((grNonCacheMemoryList[u4I].ulKVA == -1L)
+		    && (grNonCacheMemoryList[u4I].ulKPA == -1L)) {
+			MODULE_MFV_LOGD
+			    ("[VCODEC] Add_NonCacheMemoryList index = %d, VCodecThreadNum = %d, curr_tid = %d\n",
 			     u4I, a_u4VCodecThreadNum, current->pid);
 
 			grNonCacheMemoryList[u4I].u4VCodecThreadNum = a_u4VCodecThreadNum;
 			for (u4J = 0; u4J < grNonCacheMemoryList[u4I].u4VCodecThreadNum; u4J++) {
 				grNonCacheMemoryList[u4I].u4VCodecThreadID[u4J] =
 				    *(a_pu4VCodecThreadID + u4J);
-				MFV_LOGD("[Add_NonCacheMemoryList] VCodecThreadNum = %d, VCodecThreadID = %d\n",
+				MODULE_MFV_LOGD
+				    ("[VCODEC][Add_NonCacheMemoryList] VCodecThreadNum = %d, VCodecThreadID = %d\n",
 				     grNonCacheMemoryList[u4I].u4VCodecThreadNum,
 				     grNonCacheMemoryList[u4I].u4VCodecThreadID[u4J]);
 			}
@@ -228,10 +256,10 @@ void Add_NonCacheMemoryList(VAL_ULONG_T a_ulKVA, VAL_ULONG_T a_ulKPA,
 
 	if (u4I == VCODEC_MULTIPLE_INSTANCE_NUM_x_10) {
 		/* Add one line comment for avoid kernel coding style, WARNING:BRACES: */
-		MFV_LOGE("[ERROR] CAN'T ADD Add_NonCacheMemoryList, List is FULL!!\n");
+		MODULE_MFV_LOGE("[VCODEC][ERROR] CAN'T ADD Add_NonCacheMemoryList, List is FULL!!\n");
 	}
 
-	MFV_LOGD("Add_NonCacheMemoryList -\n");
+	MODULE_MFV_LOGD("[VCODEC] Add_NonCacheMemoryList -\n");
 }
 
 void Free_NonCacheMemoryList(VAL_ULONG_T a_ulKVA, VAL_ULONG_T a_ulKPA)
@@ -239,12 +267,13 @@ void Free_NonCacheMemoryList(VAL_ULONG_T a_ulKVA, VAL_ULONG_T a_ulKPA)
 	VAL_UINT32_T u4I = 0;
 	VAL_UINT32_T u4J = 0;
 
-	MFV_LOGD("Free_NonCacheMemoryList +, KVA = 0x%lx, KPA = 0x%lx\n", a_ulKVA, a_ulKPA);
+	MODULE_MFV_LOGD("[VCODEC] Free_NonCacheMemoryList +, KVA = 0x%lx, KPA = 0x%lx\n", a_ulKVA,
+		 a_ulKPA);
 
 	for (u4I = 0; u4I < VCODEC_MULTIPLE_INSTANCE_NUM_x_10; u4I++) {
 		if ((grNonCacheMemoryList[u4I].ulKVA == a_ulKVA)
 		    && (grNonCacheMemoryList[u4I].ulKPA == a_ulKPA)) {
-			MFV_LOGD("Free Free_NonCacheMemoryList index = %d\n", u4I);
+			MODULE_MFV_LOGD("[VCODEC] Free Free_NonCacheMemoryList index = %d\n", u4I);
 			grNonCacheMemoryList[u4I].u4VCodecThreadNum = VCODEC_THREAD_MAX_NUM;
 			for (u4J = 0; u4J < VCODEC_THREAD_MAX_NUM; u4J++) {
 				/* Add one line comment for avoid kernel coding style, WARNING:BRACES: */
@@ -260,10 +289,11 @@ void Free_NonCacheMemoryList(VAL_ULONG_T a_ulKVA, VAL_ULONG_T a_ulKPA)
 
 	if (u4I == VCODEC_MULTIPLE_INSTANCE_NUM_x_10) {
 		/* Add one line comment for avoid kernel coding style, WARNING:BRACES: */
-		MFV_LOGE("[ERROR] CAN'T Free Free_NonCacheMemoryList, Address is not find!!\n");
+		MODULE_MFV_LOGE
+		    ("[VCODEC][ERROR] CAN'T Free Free_NonCacheMemoryList, Address is not find!!\n");
 	}
 
-	MFV_LOGD("Free_NonCacheMemoryList -\n");
+	MODULE_MFV_LOGD("[VCODEC]Free_NonCacheMemoryList -\n");
 }
 
 
@@ -273,26 +303,33 @@ void Force_Free_NonCacheMemoryList(VAL_UINT32_T a_u4Tid)
 	VAL_UINT32_T u4J = 0;
 	VAL_UINT32_T u4K = 0;
 
-	MFV_LOGD("Force_Free_NonCacheMemoryList +, curr_id = %d", a_u4Tid);
+	MODULE_MFV_LOGD("[VCODEC] Force_Free_NonCacheMemoryList +, curr_id = %d", a_u4Tid);
 
 	for (u4I = 0; u4I < VCODEC_MULTIPLE_INSTANCE_NUM_x_10; u4I++) {
 		if (grNonCacheMemoryList[u4I].u4VCodecThreadNum != VCODEC_THREAD_MAX_NUM) {
 			for (u4J = 0; u4J < grNonCacheMemoryList[u4I].u4VCodecThreadNum; u4J++) {
 				if (grNonCacheMemoryList[u4I].u4VCodecThreadID[u4J] == a_u4Tid) {
-					MFV_LOGE("[WARNING] Force_Free_NonCacheMemoryList\n");
-					MFV_LOGE("index = %d, tid = %d, KVA = 0x%lx, KPA = 0x%lx, Size = %lu\n",
+					MODULE_MFV_LOGE
+					    ("[VCODEC][WARNING] Force_Free_NonCacheMemoryList\n");
+					MODULE_MFV_LOGE
+					    ("index = %d, tid = %d, KVA = 0x%lx, KPA = 0x%lx, Size = %lu\n",
 					     u4I, a_u4Tid, grNonCacheMemoryList[u4I].ulKVA,
 					     grNonCacheMemoryList[u4I].ulKPA,
 					     grNonCacheMemoryList[u4I].ulSize);
 
-					dma_free_coherent(0, grNonCacheMemoryList[u4I].ulSize,
+					dma_free_coherent(0,
+							  grNonCacheMemoryList[u4I].ulSize,
 							  (void *)grNonCacheMemoryList[u4I].ulKVA,
-							  (dma_addr_t) grNonCacheMemoryList[u4I].ulKPA);
+							  (dma_addr_t) grNonCacheMemoryList[u4I].
+							  ulKPA);
 
-					grNonCacheMemoryList[u4I].u4VCodecThreadNum = VCODEC_THREAD_MAX_NUM;
+					grNonCacheMemoryList[u4I].u4VCodecThreadNum =
+					    VCODEC_THREAD_MAX_NUM;
 					for (u4K = 0; u4K < VCODEC_THREAD_MAX_NUM; u4K++) {
-						/* Add one line comment for avoid kernel coding style*/
-						grNonCacheMemoryList[u4I].u4VCodecThreadID[u4K] = 0xffffffff;
+						/* Add one line comment for avoid kernel coding style,
+						   WARNING:BRACES: */
+						grNonCacheMemoryList[u4I].u4VCodecThreadID[u4K] =
+						    0xffffffff;
 					}
 					grNonCacheMemoryList[u4I].ulKVA = -1L;
 					grNonCacheMemoryList[u4I].ulKPA = -1L;
@@ -303,32 +340,34 @@ void Force_Free_NonCacheMemoryList(VAL_UINT32_T a_u4Tid)
 		}
 	}
 
-	MFV_LOGD("Force_Free_NonCacheMemoryList -, curr_id = %d", a_u4Tid);
+	MODULE_MFV_LOGD("[VCODEC] Force_Free_NonCacheMemoryList -, curr_id = %d", a_u4Tid);
 }
 
-VAL_UINT32_T Search_NonCacheMemoryList_By_KPA(VAL_ULONG_T a_ulKPA)
+VAL_ULONG_T Search_NonCacheMemoryList_By_KPA(VAL_ULONG_T a_ulKPA)
 {
 	VAL_UINT32_T u4I = 0;
 	VAL_ULONG_T ulVA_Offset = 0;
 
-	ulVA_Offset = a_ulKPA & 0x00000fff;
+	ulVA_Offset = a_ulKPA & 0x0000000000000fff;
 
-	MFV_LOGD("Search_NonCacheMemoryList_By_KPA +, KPA = 0x%lx, ulVA_Offset = 0x%lx\n", a_ulKPA,
-		 ulVA_Offset);
+	MODULE_MFV_LOGD("[VCODEC] Search_NonCacheMemoryList_By_KPA +, KPA = 0x%lx, ulVA_Offset = 0x%lx\n",
+		 a_ulKPA, ulVA_Offset);
 
 	for (u4I = 0; u4I < VCODEC_MULTIPLE_INSTANCE_NUM_x_10; u4I++) {
 		if (grNonCacheMemoryList[u4I].ulKPA == (a_ulKPA - ulVA_Offset)) {
-			MFV_LOGD("Find Search_NonCacheMemoryList_By_KPA index = %d\n", u4I);
+			MODULE_MFV_LOGD("[VCODEC] Find Search_NonCacheMemoryList_By_KPA index = %d\n",
+				 u4I);
 			break;
 		}
 	}
 
 	if (u4I == VCODEC_MULTIPLE_INSTANCE_NUM_x_10) {
-		MFV_LOGE("[ERROR] CAN'T Find Search_NonCacheMemoryList_By_KPA, Address is not find!!\n");
+		MODULE_MFV_LOGE
+		    ("[VCODEC][ERROR] CAN'T Find Search_NonCacheMemoryList_By_KPA, Address is not find!!\n");
 		return grNonCacheMemoryList[0].ulKVA + ulVA_Offset;
 	}
 
-	MFV_LOGD("Search_NonCacheMemoryList_By_KPA, ulVA = 0x%lx -\n",
+	MODULE_MFV_LOGD("[VCODEC] Search_NonCacheMemoryList_By_KPA, ulVA = 0x%lx -\n",
 		 (grNonCacheMemoryList[u4I].ulKVA + ulVA_Offset));
 
 	return grNonCacheMemoryList[u4I].ulKVA + ulVA_Offset;

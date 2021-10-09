@@ -1,5 +1,5 @@
-#ifndef __MT6589_DRVBASE_H__
-#define __MT6589_DRVBASE_H__
+#ifndef __MT6735_DRVBASE_H__
+#define __MT6735_DRVBASE_H__
 
 #include "val_types_private.h"
 
@@ -43,18 +43,15 @@ extern VAL_UINT32_T gu4EncISRCount;	/* spinlock : EncISRCountLock */
 VAL_INT32_T search_HWLockSlot_ByTID(VAL_ULONG_T ulpa, VAL_UINT32_T curr_tid);
 VAL_INT32_T search_HWLockSlot_ByHandle(VAL_ULONG_T ulpa, VAL_HANDLE_T handle);
 VAL_VCODEC_OAL_HW_CONTEXT_T *setCurr_HWLockSlot(VAL_ULONG_T ulpa, VAL_UINT32_T tid);
-VAL_VCODEC_OAL_HW_CONTEXT_T *setCurr_HWLockSlot_Thread_ID(
-								VAL_VCODEC_THREAD_ID_T a_prVcodecThreadID,
-								VAL_UINT32_T *a_prIndex);
+VAL_VCODEC_OAL_HW_CONTEXT_T *setCurr_HWLockSlot_Thread_ID(VAL_VCODEC_THREAD_ID_T a_prVcodecThreadID,
+							  VAL_UINT32_T *a_prIndex);
 VAL_VCODEC_OAL_HW_CONTEXT_T *freeCurr_HWLockSlot(VAL_ULONG_T ulpa);
-void Add_NonCacheMemoryList(
-								VAL_ULONG_T a_ulKVA,
-								VAL_ULONG_T a_ulKPA,
-								VAL_ULONG_T a_ulSize,
-								VAL_UINT32_T a_u4VCodecThreadNum,
-								VAL_UINT32_T *a_pu4VCodecThreadID);
+void Add_NonCacheMemoryList(VAL_ULONG_T a_ulKVA,
+			    VAL_ULONG_T a_ulKPA,
+			    VAL_ULONG_T a_ulSize,
+			    VAL_UINT32_T a_u4VCodecThreadNum, VAL_UINT32_T *a_pu4VCodecThreadID);
 void Free_NonCacheMemoryList(VAL_ULONG_T a_ulKVA, VAL_ULONG_T a_ulKPA);
 void Force_Free_NonCacheMemoryList(VAL_UINT32_T a_u4Tid);
-VAL_UINT32_T Search_NonCacheMemoryList_By_KPA(VAL_ULONG_T a_u4KPA);
+VAL_ULONG_T Search_NonCacheMemoryList_By_KPA(VAL_ULONG_T a_u4KPA);
 
 #endif
