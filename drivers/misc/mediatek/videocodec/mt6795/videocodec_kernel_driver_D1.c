@@ -21,9 +21,9 @@
 #include <linux/wait.h>
 #include <linux/proc_fs.h>
 #include <linux/semaphore.h>
-#include <mt-plat/dma.h>
+#include <mach/dma.h>
 #include <linux/delay.h>
-#include "mt-plat/sync_write.h"
+#include "mach/sync_write.h"
 /* #include "mach/mt_reg_base.h" */
 
 #ifndef CONFIG_MTK_CLKMGR
@@ -33,7 +33,7 @@
 #endif
 
 #ifdef CONFIG_MTK_HIBERNATION
-#include <mtk_hibernate_dpm.h>
+#include <mach/mtk_hibernate_dpm.h>
 /* #include <mach/diso.h> */
 #endif
 
